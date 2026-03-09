@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="عمار الطيار">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/192/delivery-airplane.png">
+    <title>عمار الطيار ✈️</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════
+           VARIABLES
+        ══════════════════════════════════ */
+        :root {
+            --primary:#3b82f6; --primary-glow:rgba(59,130,246,.35);
+            --bg:#f8fafc; --card:#ffffff; --text:#0f172a;
+            --sub:#64748b; --border:#e2e8f0; --nav:#0f172a; --input:#f1f5f9;
+        }
+        [data-theme="dark"] {
+            --bg:#0f172a; --card:#1e293b; --text:#f1f5f9;
+            --sub:#94a3b8; --border:#334155; --nav:#020617; --input:#0f172a;
+        }
+
+        *  { box-sizing:border-box; }
+        body {
+            font-family:'Cairo',sans-serif;
+            background:var(--bg); color:var(--text);
+            -webkit-tap-highlight-color:transparent;
+            overscroll-behavior:none;
+            transition:background .3s,color .3s;
+        }
+        .safe-top { padding-top:max(env(safe-area-inset-top),40px); }
+        .safe-bot  { padding-bottom:max(env(safe-area-inset-bottom),12px); }
+
+        /* ── Navbar ── */
+        header {
+            background:rgba(15,23,42,.97);
+            backdrop-filter:blur(12px);
+            -webkit-backdrop-filter:blur(12px);
+        }
+
+        /* ── Tabs ── */
+        .tabs-bar { background:var(--bg); border-color:var(--border); transition:background .3s; }
+        .tab-item  { background:var(--card); color:var(--sub); border:1px solid var(--border); transition:all .22s; font-family:'Cairo',sans-serif; }
+        .active-tab {
+            background:var(--primary)!important; color:white!important;
+            border-color:var(--primary)!important;
+            transform:translateY(-2px);
+            box-shadow:0 10px 20px var(--primary-glow);
+        }
+
+        /* ── Cards ── */
+        .card { background:var(--card); border:1px solid var(--border); border-radius:2rem; transition:background .3s,border-color .3s; }
+        .order-card { animation:slideUp .3s ease both; transition:transform .2s,opacity .2s; }
+        .order-card:active { transform:scale(.965); opacity:.9; }
+        @keyframes slideUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── Inputs ── */
+        .f-inp {
+            background:var(--input); border:2px solid transparent;
+            border-radius:1rem; color:var(--text); width:100%;
+            padding:.9rem 1rem; font-size:.875rem; font-family:'Cairo',sans-serif;
+            outline:none; transition:border-color .2s,background .3s;
+        }
+        .f-inp:focus { border-color:var(--primary); background:var(--card); }
+        .f-inp::placeholder { color:var(--sub); }
+
+        /* ── Toast ── */
+        #toast { transition:all .4s cubic-bezier(.18,.89,.32,1.28); transform:translate(-50%,110px); opacity:0; pointer-events:none; }
+        #toast.show { transform:translate(-50%,-16px); opacity:1; }
+
+        /* ── Splash ── */
+        #splash {
+            position:fixed; inset:0; z-index:9999;
+            background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 55%,#3b82f6 100%);
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            transition:opacity .6s,transform .6s;
+        }
+        #splash.hide { opacity:0; transform:scale(1.08); pointer-events:none; }
+        .splash-ico { font-size:72px; animation:fly 1.6s ease-in-out infinite alternate; }
+        @keyframes fly { from{transform:translateY(0) rotate(-6deg)} to{transform:translateY(-18px) rotate(6deg)} }
+
+        /* ── Install Banner ── */
+        #installBanner {
+            display:none; position:fixed; bottom:92px; left:12px; right:12px; z-index:500;
+            background:linear-gradient(135deg,#1e3a8a,#3b82f6); border-radius:20px; padding:14px 16px;
+            box-shadow:0 20px 40px rgba(59,130,246,.4); animation:slideUp .4s ease;
+        }
+        #installBanner.show { display:flex; }
+
+        /* ── Bottom Nav ── */
+        #bottomNav { background:var(--card); border-top:1px solid var(--border); transition:background .3s,border-color .3s; }
+        .bnav { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:10px 0; color:var(--sub); cursor:pointer; transition:color .2s; }
+        .bnav.on { color:var(--primary); }
+
+        /* ── Status Badges ── */
+        .s-way  { background:#dbeafe; color:#1d4ed8; }
+        .s-late { background:#fef3c7; color:#b45309; }
+        .s-done { background:#dcfce7; color:#15803d; }
+        [data-theme="dark"] .s-way  { background:#1e3a8a; color:#93c5fd; }
+        [data-theme="dark"] .s-late { background:#451a03; color:#fcd34d; }
+        [data-theme="dark"] .s-done { background:#052e16; color:#86efac; }
+
+        /* ── Sort Buttons ── */
+        .s-btn { background:var(--card); border:1px solid var(--border); color:var(--sub); border-radius:.7rem; padding:.3rem .8rem; font-size:.68rem; font-weight:700; font-family:'Cairo',sans-serif; cursor:pointer; transition:all .2s; }
+        .s-btn.on { background:var(--primary); color:white; border-color:var(--primary); }
+
+        /* ── Progress Bar ── */
+        .prog-fill { background:linear-gradient(90deg,#3b82f6,#7c3aed); border-radius:99px; height:6px; transition:width .6s ease; }
+
+        /* ── Finance Gradient ── */
+        .finance-header { background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#065f46 100%); }
+
+        /* ── Misc ── */
+        .no-scroll::-webkit-scrollbar { display:none; }
+        .no-scroll { -ms-overflow-style:none; scrollbar-width:none; }
+        #offlineBadge { display:none; }
+        #offlineBadge.show { display:block; }
+        textarea { resize:none; }
+        select option { background:var(--card); color:var(--text); }
+        .fab-glow { box-shadow:0 20px 25px -5px var(--primary-glow); }
+        .ping-dot span:first-child { animation:ping 1.2s cubic-bezier(0,0,.2,1) infinite; }
+        @keyframes ping { 75%,100%{transform:scale(2);opacity:0} }
+    </style>
+</head>
+<body class="pb-24">
+
+<!-- ═══ SPLASH ═══ -->
+<div id="splash">
+    <div class="splash-ico">✈️</div>
+    <h1 class="text-white text-3xl font-black mt-5 tracking-tight">عمار الطيار</h1>
+    <p class="text-blue-300 text-sm mt-2 font-bold">Smart Logistics AI ✨</p>
+    <div class="flex gap-2 mt-8">
+        <span class="w-2 h-2 bg-white/30 rounded-full animate-pulse"></span>
+        <span class="w-2 h-2 bg-white/60 rounded-full animate-pulse" style="animation-delay:.2s"></span>
+        <span class="w-2 h-2 bg-white/90 rounded-full animate-pulse" style="animation-delay:.4s"></span>
+    </div>
+</div>
+
+<!-- ═══ INSTALL ═══ -->
+<div id="installBanner" class="items-center gap-3">
+    <span class="text-2xl">📲</span>
+    <div class="flex-1">
+        <p class="text-white font-bold text-sm">ثبّت عمار الطيار على هاتفك</p>
+        <p class="text-blue-200 text-xs">يشتغل أوفلاين 🔥</p>
+    </div>
+    <button id="installBtn" class="bg-white text-blue-600 px-4 py-2 rounded-xl font-bold text-sm active:scale-95">تثبيت</button>
+    <button onclick="document.getElementById('installBanner').classList.remove('show')" class="text-white/50 px-1 text-lg">✕</button>
+</div>
+
+<!-- ═══ OFFLINE ═══ -->
+<div id="offlineBadge" class="fixed top-3 left-1/2 -translate-x-1/2 z-[300] bg-orange-500 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-xl">
+    📵 أوفلاين — بياناتك محفوظة
+</div>
+
+<!-- ═══════════════════════════
+     NAVBAR
+═══════════════════════════ -->
+<header class="text-white safe-top sticky top-0 z-50 rounded-b-[2.5rem] shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,.5) 28px,rgba(255,255,255,.5) 29px),repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(255,255,255,.5) 28px,rgba(255,255,255,.5) 29px)"></div>
+
+    <div class="px-5 pb-5 max-w-md mx-auto relative">
+        <!-- Row 1: Brand + Actions -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <div class="bg-blue-500 p-3 rounded-2xl rotate-6 shadow-xl shadow-blue-500/40">
+                        <i data-lucide="plane" class="text-white" size="22"></i>
+                    </div>
+                    <span class="ping-dot absolute -top-1 -right-1 flex h-3 w-3">
+                        <span class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 border-2 border-[#0f172a]"></span>
+                    </span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight leading-none">عمار الطيار</h1>
+                    <p id="dateLabel" class="text-blue-300 text-[9px] font-bold uppercase tracking-widest mt-0.5"></p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <!-- Dark Mode -->
+                <button onclick="toggleDark()" class="bg-white/10 p-2.5 rounded-xl active:scale-90 border border-white/10">
+                    <i data-lucide="moon" size="18" id="themeIco" class="text-white"></i>
+                </button>
+                <!-- Finance Button ★ NEW ★ -->
+                <button onclick="openFinanceModal()" class="bg-emerald-600 p-2.5 rounded-xl shadow-lg shadow-emerald-600/30 active:scale-90 transition-all">
+                    <i data-lucide="wallet" size="18" class="text-white"></i>
+                </button>
+                <!-- AI Route -->
+                <button onclick="aiOptimizeRoute()" class="bg-slate-800 p-2.5 rounded-xl border border-slate-700 active:scale-90">
+                    <i data-lucide="sparkles" size="18" class="text-yellow-400"></i>
+                </button>
+                <!-- Add -->
+                <button onclick="openModal()" class="bg-blue-600 text-white p-2.5 rounded-xl fab-glow active:scale-90">
+                    <i data-lucide="plus" size="22"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Row 2: Stats -->
+        <div class="grid grid-cols-4 gap-2 mb-4">
+            <div class="bg-white/10 rounded-xl p-2 text-center border border-white/10">
+                <p class="text-white font-black text-lg leading-none" id="sW">0</p>
+                <p class="text-blue-300 text-[9px] font-bold mt-0.5">طريق</p>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2 text-center border border-white/10">
+                <p class="text-white font-black text-lg leading-none" id="sD">0</p>
+                <p class="text-blue-300 text-[9px] font-bold mt-0.5">مؤجل</p>
+            </div>
+            <div class="bg-white/10 rounded-xl p-2 text-center border border-white/10">
+                <p class="text-white font-black text-lg leading-none" id="sOk">0</p>
+                <p class="text-blue-300 text-[9px] font-bold mt-0.5">وُصّل</p>
+            </div>
+            <!-- Finance Quick Stat ★ NEW ★ -->
+            <div class="bg-emerald-600/30 rounded-xl p-2 text-center border border-emerald-500/30 cursor-pointer active:scale-95 transition-all" onclick="openFinanceModal()">
+                <p class="text-emerald-300 font-black text-lg leading-none" id="sProfitH">0</p>
+                <p class="text-emerald-300 text-[9px] font-bold mt-0.5">مكسبي 💰</p>
+            </div>
+        </div>
+
+        <!-- Row 3: Search -->
+        <div class="relative group">
+            <i data-lucide="search" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors" size="16"></i>
+            <input type="text" id="searchInput" oninput="renderOrders()" placeholder="ابحث بالاسم، العنوان، أو الموبايل..."
+                class="w-full bg-slate-900/50 border border-slate-700/50 rounded-2xl py-3.5 pr-10 pl-4 text-sm text-white placeholder-slate-500 outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-900 transition-all">
+        </div>
+    </div>
+</header>
+
+<!-- ═══ TABS ═══ -->
+<div class="tabs-bar sticky top-[226px] z-40 py-3 px-4 flex gap-2 no-scroll overflow-x-auto border-b">
+    <button onclick="setTab('في الطريق')"   class="tab-item whitespace-nowrap px-5 py-2 rounded-2xl text-xs font-black transition-all active-tab">🚀 في الطريق</button>
+    <button onclick="setTab('مؤجل')"         class="tab-item whitespace-nowrap px-5 py-2 rounded-2xl text-xs font-black transition-all">⏳ مؤجل</button>
+    <button onclick="setTab('تم التوصيل')"  class="tab-item whitespace-nowrap px-5 py-2 rounded-2xl text-xs font-black transition-all">✅ تم التوصيل</button>
+    <button onclick="setTab('📊 إحصائيات')" class="tab-item whitespace-nowrap px-5 py-2 rounded-2xl text-xs font-black transition-all">📊 إحصاء</button>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<main class="max-w-md mx-auto px-4 pt-3 pb-6 space-y-3">
+
+    <!-- Progress Card -->
+    <div id="progCard" class="card p-4 hidden">
+        <div class="flex justify-between items-center mb-1.5">
+            <span class="text-xs font-bold" style="color:var(--sub)">تقدم اليوم</span>
+            <span class="text-xs font-black" style="color:var(--primary)" id="progPct">0%</span>
+        </div>
+        <div class="w-full h-2 rounded-full" style="background:var(--border)">
+            <div id="progBar" class="prog-fill" style="width:0%"></div>
+        </div>
+        <div class="flex justify-between mt-1.5">
+            <span class="text-[10px]" style="color:var(--sub)" id="progLbl">0 من 0</span>
+            <span class="text-[10px] font-bold text-emerald-500" id="progCod">محصّل: 0 ج</span>
+        </div>
+    </div>
+
+    <!-- Sort Toolbar -->
+    <div id="sortBar" class="hidden flex gap-2 items-center flex-wrap">
+        <span class="text-[10px] font-bold" style="color:var(--sub)">ترتيب:</span>
+        <button onclick="sortBy('time')"   id="sTime"   class="s-btn on">الأحدث</button>
+        <button onclick="sortBy('cod')"    id="sCodB"   class="s-btn">المبلغ ↓</button>
+        <button onclick="sortBy('urgent')" id="sUrgent" class="s-btn">🔥 العاجل</button>
+    </div>
+
+    <!-- Orders List -->
+    <div id="ordersList" class="space-y-4"></div>
+
+    <!-- Stats View -->
+    <div id="statsView" class="hidden space-y-3"></div>
+
+</main>
+
+<!-- ═══════════════════════════════════════
+     💰 FINANCE MODAL  ★ NEW ★
+═══════════════════════════════════════ -->
+<div id="financeModal" class="fixed inset-0 z-[80] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onclick="closeFinanceModal()"></div>
+
+    <div class="w-full max-w-sm rounded-[2.5rem] shadow-2xl z-10 overflow-hidden" style="background:var(--card)">
+
+        <!-- Finance Header -->
+        <div class="finance-header p-7 text-white text-center relative">
+            <div class="absolute inset-0 opacity-10" style="background-image:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.3) 10px,rgba(255,255,255,.3) 11px)"></div>
+            <div class="relative">
+                <div class="flex justify-between items-start mb-3">
+                    <button onclick="toggleFinanceSettings()" class="bg-white/10 p-2 rounded-xl border border-white/10 active:scale-90">
+                        <i data-lucide="settings-2" size="18" class="text-white"></i>
+                    </button>
+                    <div class="bg-emerald-500/20 w-14 h-14 rounded-full flex items-center justify-center border-2 border-emerald-400/30">
+                        <i data-lucide="trending-up" size="28" class="text-emerald-400"></i>
+                    </div>
+                    <button onclick="closeFinanceModal()" class="bg-white/10 p-2 rounded-xl border border-white/10 active:scale-90">
+                        <i data-lucide="x" size="18" class="text-white"></i>
+                    </button>
+                </div>
+                <h2 class="text-xl font-black">حسابات عمار الطيار</h2>
+                <p class="text-blue-300 text-xs mt-1 font-bold" id="financeDateLbl"></p>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="financeSettings" class="hidden mt-4 bg-white/5 p-4 rounded-2xl border border-white/10 text-right">
+                <p class="text-xs font-black mb-3 text-blue-200">⚙️ تعديل مكسبك لكل أوردر</p>
+                <div class="flex gap-2">
+                    <input type="number" id="profitInput" placeholder="25" class="f-inp bg-slate-800 text-white text-center border-slate-600 flex-1" style="background:#1e293b">
+                    <button onclick="saveProfitRate()" class="bg-blue-600 px-4 rounded-xl text-xs font-bold text-white active:scale-90 whitespace-nowrap">حفظ</button>
+                </div>
+                <p class="text-[10px] text-blue-300/60 mt-2">المبلغ الثابت اللي بتاخده عن كل أوردر وُصّل</p>
+            </div>
+        </div>
+
+        <!-- Finance Body -->
+        <div class="p-6 space-y-4">
+
+            <!-- Delivered Count -->
+            <div class="flex justify-between items-center p-4 rounded-2xl" style="background:var(--input)">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-100 p-2 rounded-xl"><i data-lucide="package-check" size="16" class="text-blue-600"></i></div>
+                    <span class="text-sm font-bold" style="color:var(--sub)">تم التسليم</span>
+                </div>
+                <span class="text-lg font-black" style="color:var(--text)" id="fCount">0 أوردر</span>
+            </div>
+
+            <!-- COD + Profit Grid -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-4 rounded-2xl text-center" style="background:#eff6ff;border:1px solid #bfdbfe">
+                    <p class="text-[10px] font-black text-blue-600 uppercase mb-1">إجمالي التحصيل</p>
+                    <p class="text-xl font-black text-blue-900" id="fTotal">0 ج</p>
+                    <p class="text-[9px] text-blue-400 mt-0.5">COD كامل</p>
+                </div>
+                <div class="p-4 rounded-2xl text-center" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                    <p class="text-[10px] font-black text-emerald-600 uppercase mb-1">مكسبي 🎉</p>
+                    <p class="text-xl font-black text-emerald-900" id="fProfit">0 ج</p>
+                    <p class="text-[9px] text-emerald-400 mt-0.5" id="fProfitDesc">0 ج × 0 أوردر</p>
+                </div>
+            </div>
+
+            <!-- Company Payout — Highlight Box -->
+            <div class="p-5 rounded-2xl text-center border-2" style="background:#fffbeb;border-color:#fcd34d">
+                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">توريد الشركة 🏢</p>
+                <p class="text-4xl font-black text-amber-900" id="fCompany">0</p>
+                <p class="text-xs font-bold text-amber-500 mt-1">جنيه مصري</p>
+                <p class="text-[9px] text-amber-400 mt-1" id="fCompanyDesc">إجمالي - مكسبك</p>
+            </div>
+
+            <!-- Pending Info -->
+            <div class="flex justify-between items-center p-3 rounded-xl" style="background:var(--input)">
+                <span class="text-xs font-bold" style="color:var(--sub)">⏳ كاش معلّق (لم يُوصَّل)</span>
+                <span class="text-sm font-black text-orange-500" id="fPending">0 ج</span>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-3 pt-1">
+                <button onclick="shareFinanceReport()" class="bg-blue-600 text-white py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/20">
+                    <i data-lucide="share-2" size="15"></i> مشاركة
+                </button>
+                <button onclick="clearDelivered()" class="py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all" style="background:#fef2f2;color:#dc2626">
+                    <i data-lucide="trash-2" size="15"></i> تصفية الواصل
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ ADD/EDIT MODAL ═══ -->
+<div id="orderModal" class="fixed inset-0 z-[60] hidden flex items-end justify-center">
+    <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onclick="closeModal()"></div>
+    <div class="w-full max-w-md rounded-t-[2.5rem] shadow-2xl z-10 flex flex-col max-h-[96vh]" style="background:var(--card)">
+        <div class="w-10 h-1.5 rounded-full mx-auto mt-4 mb-1 shrink-0" style="background:var(--border)"></div>
+        <div class="px-6 py-3 border-b flex justify-between items-center" style="border-color:var(--border)">
+            <h2 id="modalTitle" class="text-lg font-black" style="color:var(--text)">📦 إضافة أوردر جديد</h2>
+            <button onclick="closeModal()" class="p-2 rounded-full active:scale-90" style="background:var(--input);color:var(--sub)">
+                <i data-lucide="x" size="18"></i>
+            </button>
+        </div>
+        <form id="orderForm" class="p-6 overflow-y-auto no-scroll space-y-4">
+            <input type="hidden" id="orderId">
+
+            <!-- Smart Parse -->
+            <div class="p-4 rounded-2xl border" style="background:var(--input);border-color:var(--border)">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
+                        <span class="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        المساعد الذكي ✨
+                    </span>
+                    <button type="button" onclick="aiSmartParse()" id="parseBtn"
+                        class="text-xs font-bold bg-blue-600 text-white px-4 py-1.5 rounded-xl shadow-md active:scale-90 transition-all">
+                        تحليل النص
+                    </button>
+                </div>
+                <textarea id="rawText" rows="3" placeholder="الصق رسالة العميل هنا (الاسم، الرقم، العنوان، المبلغ)..." class="f-inp text-xs"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">الاسم *</label>
+                    <input type="text" id="custName" placeholder="اسم العميل" required class="f-inp">
+                </div>
+                <div>
+                    <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">المبلغ COD</label>
+                    <input type="number" id="custCod" placeholder="0.00" class="f-inp font-bold">
+                </div>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">الموبايل *</label>
+                <input type="tel" id="custPhone" placeholder="01xxxxxxxxx" required dir="ltr" class="f-inp text-left">
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">العنوان بالتفصيل *</label>
+                <textarea id="custAddr" rows="2" required placeholder="المنطقة، الشارع، علامة مميزة..." class="f-inp"></textarea>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">ملاحظة (اختياري)</label>
+                <input type="text" id="custNote" placeholder="مثال: يفتح بعد الظهر" class="f-inp">
+            </div>
+
+            <!-- Urgent Toggle -->
+            <div class="flex items-center justify-between p-3 rounded-xl border" style="border-color:var(--border);background:var(--input)">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="flame" size="15" class="text-orange-500"></i>
+                    <span class="text-xs font-bold" style="color:var(--text)">أوردر عاجل 🔥</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="custUrgent" class="sr-only peer">
+                    <div class="w-10 h-5 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full after:absolute after:top-0.5 after:right-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+                </label>
+            </div>
+
+            <div>
+                <label class="text-[10px] font-black uppercase mb-1 block" style="color:var(--sub)">الحالة</label>
+                <select id="custSec" class="f-inp">
+                    <option value="في الطريق">🚀 في الطريق</option>
+                    <option value="مؤجل">⏳ مؤجل</option>
+                    <option value="تم التوصيل">✅ تم التوصيل</option>
+                </select>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black text-base shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-3">
+                <i data-lucide="save" size="18"></i> حفظ الطلب
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ═══ STATUS MODAL ═══ -->
+<div id="statusModal" class="fixed inset-0 z-[70] hidden flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeStatusModal()"></div>
+    <div class="w-full max-w-md rounded-t-[2rem] shadow-2xl z-10 p-5 space-y-2" style="background:var(--card)">
+        <p class="text-center font-black text-sm mb-4" style="color:var(--text)">تغيير حالة الأوردر</p>
+        <button onclick="changeStatus('في الطريق')"  class="w-full py-4 rounded-2xl font-bold text-sm active:scale-95 s-way">🚀 في الطريق</button>
+        <button onclick="changeStatus('مؤجل')"        class="w-full py-4 rounded-2xl font-bold text-sm active:scale-95 s-late">⏳ مؤجل</button>
+        <button onclick="changeStatus('تم التوصيل')" class="w-full py-4 rounded-2xl font-bold text-sm active:scale-95 s-done">✅ تم التوصيل</button>
+        <button onclick="closeStatusModal()" class="w-full py-3 rounded-2xl font-bold text-sm active:scale-95" style="background:var(--input);color:var(--sub)">إلغاء</button>
+    </div>
+</div>
+
+<!-- ═══ REPORT MODAL ═══ -->
+<div id="reportModal" class="fixed inset-0 z-[70] hidden flex items-end justify-center">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeReportModal()"></div>
+    <div class="w-full max-w-md rounded-t-[2rem] shadow-2xl z-10 p-5" style="background:var(--card)">
+        <p class="font-black text-base text-center mb-4" style="color:var(--text)">📋 تقرير عمار الطيار</p>
+        <div id="reportText" class="text-xs p-4 rounded-2xl border mb-4 leading-loose" style="background:var(--input);border-color:var(--border);color:var(--text);white-space:pre-wrap;max-height:40vh;overflow-y:auto;font-family:'Cairo',sans-serif;direction:rtl"></div>
+        <div class="flex gap-2">
+            <button onclick="shareReport('wa')"   class="flex-1 bg-green-500 text-white py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95">
+                <i data-lucide="message-circle" size="15"></i> واتساب
+            </button>
+            <button onclick="shareReport('copy')" class="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 active:scale-95">
+                <i data-lucide="copy" size="15"></i> نسخ
+            </button>
+            <button onclick="closeReportModal()" class="px-4 rounded-2xl font-bold text-xs" style="background:var(--input);color:var(--sub)">✕</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div id="toast" class="fixed bottom-24 left-1/2 z-[100] bg-slate-900/95 backdrop-blur-md text-white px-6 py-3.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 whitespace-nowrap border border-slate-700">
+    <div class="bg-blue-500 p-1 rounded-lg"><i data-lucide="bell" size="13"></i></div>
+    <span id="toastMsg">تم</span>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div id="bottomNav" class="fixed bottom-0 left-0 right-0 z-50 flex safe-bot">
+    <button onclick="setTab('في الطريق')"   class="bnav on" id="bn0"><i data-lucide="truck" size="20"></i><span style="font-size:9px;font-weight:700">الطريق</span></button>
+    <button onclick="setTab('مؤجل')"         class="bnav"    id="bn1"><i data-lucide="clock" size="20"></i><span style="font-size:9px;font-weight:700">مؤجل</span></button>
+    <button onclick="openModal()" class="bnav">
+        <div class="bg-blue-600 p-3 rounded-2xl -mt-5 shadow-2xl fab-glow">
+            <i data-lucide="plus" size="22" class="text-white"></i>
+        </div>
+    </button>
+    <button onclick="openFinanceModal()"     class="bnav"    id="bn4"><i data-lucide="wallet" size="20"></i><span style="font-size:9px;font-weight:700">حسابات</span></button>
+    <button onclick="setTab('📊 إحصائيات')" class="bnav"    id="bn3"><i data-lucide="bar-chart-2" size="20"></i><span style="font-size:9px;font-weight:700">إحصاء</span></button>
+</div>
+
+<!-- ═══════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════ -->
+<script>
+/* ══ CONFIG ══ */
+const apiKey = ""; // ضع مفتاح Gemini هنا
+
+/* ══ SERVICE WORKER ══ */
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+/* ══ INSTALL PWA ══ */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    document.getElementById('installBanner').classList.add('show');
+});
+document.getElementById('installBtn').onclick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') showToast('🎉 تم تثبيت عمار الطيار!');
+    deferredPrompt = null;
+    document.getElementById('installBanner').classList.remove('show');
+};
+window.addEventListener('appinstalled', () => document.getElementById('installBanner').classList.remove('show'));
+
+/* ══ SPLASH ══ */
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        const s = document.getElementById('splash');
+        s.classList.add('hide');
+        setTimeout(() => s.remove(), 700);
+    }, 2200);
+});
+
+/* ══ DARK MODE ══ */
+function toggleDark() {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+    localStorage.setItem('at_theme', dark ? 'light' : 'dark');
+    document.getElementById('themeIco').setAttribute('data-lucide', dark ? 'moon' : 'sun');
+    lucide.createIcons();
+}
+(function initTheme() {
+    const t = localStorage.getItem('at_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', t);
+    if (t === 'dark') setTimeout(() => {
+        document.getElementById('themeIco')?.setAttribute('data-lucide', 'sun');
+        lucide.createIcons();
+    }, 400);
+})();
+
+/* ══ OFFLINE ══ */
+function checkOnline() { document.getElementById('offlineBadge').classList.toggle('show', !navigator.onLine); }
+window.addEventListener('online', checkOnline); window.addEventListener('offline', checkOnline); checkOnline();
+
+/* ══ DATE ══ */
+(function() {
+    const d = new Date();
+    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const lbl = `${days[d.getDay()]} ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    document.getElementById('dateLabel').innerText = lbl;
+    const fLbl = document.getElementById('financeDateLbl');
+    if (fLbl) fLbl.innerText = lbl;
+})();
+
+/* ══ DATA — loads from all legacy keys ══ */
+let orders = JSON.parse(
+    localStorage.getItem('طيار_داتا_v3') ||
+    localStorage.getItem('طيار_داتا_v2') ||
+    localStorage.getItem('طيار_داتا_v1') ||
+    localStorage.getItem('mandub_pro_v3') || '[]'
+);
+let currentTab      = 'في الطريق';
+let currentStatusId = null;
+let sortMode        = 'time';
+let reportTxt       = '';
+let profitRate      = parseFloat(localStorage.getItem('at_profit_rate') || '25');
+
+function saveData() {
+    localStorage.setItem('طيار_داتا_v3', JSON.stringify(orders));
+    localStorage.setItem('طيار_داتا_v2', JSON.stringify(orders));
+}
+
+/* ══════════════════════════════════
+   💰 FINANCE SYSTEM  ★ NEW ★
+══════════════════════════════════ */
+
+function calcFinance() {
+    const delivered = orders.filter(o => o.section === 'تم التوصيل');
+    const total     = delivered.reduce((s, o) => s + (+o.cod || 0), 0);
+    const profit    = delivered.length * profitRate;
+    const company   = total - profit;
+    const pending   = orders.filter(o => o.section !== 'تم التوصيل').reduce((s, o) => s + (+o.cod || 0), 0);
+    return { delivered, total, profit, company, pending, count: delivered.length };
+}
+
+function openFinanceModal() {
+    const f = calcFinance();
+
+    document.getElementById('fCount').innerText        = `${f.count} أوردر`;
+    document.getElementById('fTotal').innerText        = `${f.total.toLocaleString()} ج`;
+    document.getElementById('fProfit').innerText       = `${f.profit.toLocaleString()} ج`;
+    document.getElementById('fProfitDesc').innerText   = `${profitRate} ج × ${f.count} أوردر`;
+    document.getElementById('fCompany').innerText      = f.company.toLocaleString();
+    document.getElementById('fCompanyDesc').innerText  = `${f.total.toLocaleString()} - ${f.profit.toLocaleString()} = ${f.company.toLocaleString()} ج`;
+    document.getElementById('fPending').innerText      = `${f.pending.toLocaleString()} ج`;
+    document.getElementById('profitInput').value       = profitRate;
+    document.getElementById('financeDateLbl').innerText = document.getElementById('dateLabel').innerText;
+
+    document.getElementById('financeModal').classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function closeFinanceModal() {
+    document.getElementById('financeModal').classList.add('hidden');
+    document.getElementById('financeSettings').classList.add('hidden');
+}
+
+function toggleFinanceSettings() {
+    document.getElementById('financeSettings').classList.toggle('hidden');
+    lucide.createIcons();
+}
+
+function saveProfitRate() {
+    const val = parseFloat(document.getElementById('profitInput').value);
+    if (isNaN(val) || val < 0) return showToast('أدخل رقم صحيح');
+    profitRate = val;
+    localStorage.setItem('at_profit_rate', profitRate);
+    document.getElementById('financeSettings').classList.add('hidden');
+    openFinanceModal();
+    showToast(`تم تعديل مكسبك لـ ${profitRate} ج/أوردر 💰`);
+}
+
+function clearDelivered() {
+    if (!confirm('مسح كل الأوردرات المُوصَّلة وبدء حساب جديد؟')) return;
+    orders = orders.filter(o => o.section !== 'تم التوصيل');
+    saveData(); renderOrders(); closeFinanceModal();
+    showToast('تمت التصفية — حساب جديد ✅');
+}
+
+function shareFinanceReport() {
+    const f  = calcFinance();
+    const d  = new Date();
+    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const txt = `✈️ حسابات عمار الطيار
+📅 ${days[d.getDay()]} ${d.toLocaleDateString('ar-EG')}
+━━━━━━━━━━━━━━
+📦 أوردرات مُوصَّلة: ${f.count}
+💵 إجمالي التحصيل: ${f.total.toLocaleString()} ج
+💰 مكسبي (${profitRate} ج × ${f.count}): ${f.profit.toLocaleString()} ج
+🏢 توريد الشركة: ${f.company.toLocaleString()} ج
+⏳ كاش معلّق: ${f.pending.toLocaleString()} ج
+━━━━━━━━━━━━━━
+✅ نسبة الإنجاز: ${orders.length ? Math.round((f.count/orders.length)*100) : 0}%`;
+
+    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, '_blank');
+}
+
+/* ══ GEMINI AI ══ */
+async function callGemini(prompt, isJson = false) {
+    if (!apiKey) { showToast('أضف مفتاح Gemini في الكود ⚙️'); throw new Error('no key'); }
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const payload = { contents: [{ parts: [{ text: prompt }] }] };
+    if (isJson) {
+        payload.generationConfig = {
+            responseMimeType: "application/json",
+            responseSchema: { type:"OBJECT", properties:{
+                name:{type:"string"}, phone:{type:"string"}, address:{type:"string"}, cod:{type:"number"}
+            }}
+        };
+    }
+    for (let i = 0; i < 3; i++) {
+        try {
+            const res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+            if (!res.ok) throw new Error();
+            return (await res.json()).candidates[0].content.parts[0].text;
+        } catch(e) { await new Promise(r => setTimeout(r, Math.pow(2,i)*1000)); }
+    }
+    throw new Error('فشل الاتصال');
+}
+
+async function aiSmartParse() {
+    const text = document.getElementById('rawText').value.trim();
+    if (!text) return showToast('الصق نصاً أولاً 📋');
+
+    if (!apiKey) {
+        const phoneM = text.match(/(0\d[\s\-]?\d{9}|\+2\d{11})/);
+        const codM   = text.match(/(\d{2,5})\s*(جنيه|ج\.م|EGP|LE)/i);
+        if (phoneM) document.getElementById('custPhone').value = phoneM[1].replace(/[\s\-]/g,'');
+        if (codM)   document.getElementById('custCod').value   = codM[1];
+        document.getElementById('custAddr').value = text.replace(phoneM?.[0]||'','').replace(codM?.[0]||'','').trim();
+        return showToast('تم الإدخال — راجع البيانات ✅');
+    }
+
+    const btn = document.getElementById('parseBtn');
+    const orig = btn.innerText;
+    btn.innerText = '⏳ جاري الفهم...'; btn.disabled = true;
+    try {
+        const d = JSON.parse(await callGemini(`استخرج الاسم والهاتف والعنوان والمبلغ من: ${text}`, true));
+        if (d.name)    document.getElementById('custName').value  = d.name;
+        if (d.phone)   document.getElementById('custPhone').value = d.phone;
+        if (d.address) document.getElementById('custAddr').value  = d.address;
+        if (d.cod)     document.getElementById('custCod').value   = d.cod;
+        showToast('تم التحليل بنجاح! ✨');
+    } catch(e) { showToast('خطأ في التحليل'); }
+    finally { btn.innerText = orig; btn.disabled = false; }
+}
+
+async function aiOptimizeRoute() {
+    const onWay = orders.filter(o => o.section === 'في الطريق');
+    if (onWay.length < 2) return showToast('أضف طلبين على الأقل 📦');
+    if (!apiKey) return showToast('يحتاج مفتاح Gemini لهذه الميزة');
+    showToast('جاري حساب أسرع مسار جغرافي... 🚚');
+    try {
+        const addrs  = onWay.map((o,i) => `${i}: ${o.address}`).join(' | ');
+        const res    = await callGemini(`رتب فهارس العناوين من الأقرب للأبعد، أعد الأرقام فقط مفصولة بفاصلة: ${addrs}`);
+        const sorted = res.match(/\d+/g).map(Number).map(i => onWay[i]).filter(Boolean);
+        orders = [...sorted, ...orders.filter(o => o.section !== 'في الطريق')];
+        saveData(); renderOrders(); showToast('تم ترتيب المسار! 🚀');
+    } catch(e) { showToast('عذراً، تعذر الاتصال بالذكاء الاصطناعي'); }
+}
+
+/* ══ TABS ══ */
+function setTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-item').forEach(el =>
+        el.classList.toggle('active-tab', el.innerText.includes(tab.replace('📊 ','')))
+    );
+    const navMap = { 'في الطريق':'bn0','مؤجل':'bn1','📊 إحصائيات':'bn3' };
+    ['bn0','bn1','bn3','bn4'].forEach(id => document.getElementById(id)?.classList.remove('on'));
+    if (navMap[tab]) document.getElementById(navMap[tab])?.classList.add('on');
+    renderOrders();
+}
+
+/* ══ SORT ══ */
+function sortBy(mode) {
+    sortMode = mode;
+    const map = {time:'sTime', cod:'sCodB', urgent:'sUrgent'};
+    document.querySelectorAll('.s-btn').forEach(b => b.classList.remove('on'));
+    document.getElementById(map[mode])?.classList.add('on');
+    renderOrders();
+}
+
+/* ══ RENDER ══ */
+function renderOrders() {
+    const list     = document.getElementById('ordersList');
+    const statsV   = document.getElementById('statsView');
+    const sortBar  = document.getElementById('sortBar');
+    const progCard = document.getElementById('progCard');
+    const search   = document.getElementById('searchInput').value.toLowerCase().trim();
+
+    /* counts */
+    const nW  = orders.filter(o => o.section==='في الطريق').length;
+    const nD  = orders.filter(o => o.section==='مؤجل').length;
+    const nOk = orders.filter(o => o.section==='تم التوصيل').length;
+    const myProfit = nOk * profitRate;
+
+    document.getElementById('sW').innerText  = nW;
+    document.getElementById('sD').innerText  = nD;
+    document.getElementById('sOk').innerText = nOk;
+    document.getElementById('sProfitH').innerText = myProfit > 999 ? (myProfit/1000).toFixed(1)+'k' : myProfit;
+
+    /* progress */
+    const tot = orders.length;
+    const pct = tot ? Math.round((nOk/tot)*100) : 0;
+    const cod = orders.filter(o => o.section==='تم التوصيل').reduce((s,o) => s+(+o.cod||0), 0);
+    document.getElementById('progBar').style.width = pct+'%';
+    document.getElementById('progPct').innerText   = pct+'%';
+    document.getElementById('progLbl').innerText   = `${nOk} من ${tot} أوردر`;
+    document.getElementById('progCod').innerText   = `محصّل: ${cod.toLocaleString()} ج`;
+    progCard.classList.toggle('hidden', tot === 0);
+
+    /* stats tab */
+    if (currentTab === '📊 إحصائيات') {
+        list.classList.add('hidden'); statsV.classList.remove('hidden');
+        sortBar.classList.add('hidden');
+        renderStats(statsV, nW, nD, nOk, cod, tot);
+        return;
+    }
+    list.classList.remove('hidden'); statsV.classList.add('hidden');
+
+    let filtered = orders.filter(o =>
+        o.section === currentTab &&
+        (!search ||
+            o.customerName?.toLowerCase().includes(search) ||
+            o.address?.toLowerCase().includes(search) ||
+            o.phone?.includes(search))
+    );
+    if (sortMode==='cod')    filtered.sort((a,b) => (+b.cod||0)-(+a.cod||0));
+    if (sortMode==='urgent') filtered.sort((a,b) => (b.urgent?1:0)-(a.urgent?1:0));
+
+    sortBar.classList.toggle('hidden', filtered.length < 2);
+
+    if (!filtered.length) {
+        const em = {'في الطريق':'🚀','مؤجل':'⏳','تم التوصيل':'✅'};
+        list.innerHTML = `
+            <div class="py-20 text-center">
+                <div class="text-5xl mb-3">${em[currentTab]||'📦'}</div>
+                <p class="font-bold" style="color:var(--sub)">لا توجد بيانات متاحة</p>
+                <p class="text-xs mt-1" style="color:var(--sub)">اضغط + لإضافة أوردر جديد</p>
+            </div>`;
+        lucide.createIcons(); return;
+    }
+
+    list.innerHTML = filtered.map((o, idx) => {
+        const sc = o.section==='تم التوصيل'?'s-done':o.section==='مؤجل'?'s-late':'s-way';
+        const sl = o.section==='تم التوصيل'?'✅ تم التوصيل':o.section==='مؤجل'?'⏳ مؤجل':'🚀 في الطريق';
+        return `
+        <div class="order-card card p-5" style="animation-delay:${idx*.04}s">
+            <div class="flex justify-between items-start mb-4">
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-1.5">
+                        ${o.urgent ? '<span class="text-orange-500">🔥</span>' : ''}
+                        <h3 class="font-black text-base" style="color:var(--text)">${o.customerName}</h3>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-bold ${sc}">${sl}</span>
+                        <span class="text-[9px] font-mono" style="color:var(--sub)">#${o.id}</span>
+                    </div>
+                </div>
+                <div class="rounded-2xl px-3 py-2 text-center" style="background:var(--input)">
+                    <span class="text-xl font-black block" style="color:var(--primary)">${o.cod||0}</span>
+                    <span class="text-[8px] font-bold uppercase" style="color:var(--sub)">جنيه</span>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-2xl mb-3 flex gap-2 items-start text-xs" style="background:var(--input)">
+                <div class="p-1.5 rounded-lg shadow-sm shrink-0" style="background:var(--card)">
+                    <i data-lucide="map-pin" size="12" class="text-red-500"></i>
+                </div>
+                <span class="line-clamp-2 leading-relaxed font-bold" style="color:var(--sub)">${o.address}</span>
+            </div>
+
+            ${o.note ? `<div class="px-3 py-1.5 rounded-xl mb-3 flex gap-1.5 items-center text-xs" style="background:#fefce8;color:#854d0e"><i data-lucide="sticky-note" size="11"></i>${o.note}</div>` : ''}
+
+            <div class="flex gap-2">
+                <a href="tel:${o.phone}"
+                    class="flex-1 bg-green-500 text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-1.5 text-xs active:scale-95 active:bg-green-600 transition-all">
+                    <i data-lucide="phone" size="15"></i> اتصال
+                </a>
+                <button onclick="openWA('${o.phone}','${encodeURIComponent(o.address)}','${o.cod||0}')"
+                    class="flex-1 bg-emerald-100 text-emerald-700 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-1.5 text-xs active:scale-95 transition-all">
+                    <i data-lucide="message-circle" size="15"></i> واتساب
+                </button>
+                <button onclick="openMaps('${encodeURIComponent(o.address)}')"
+                    class="px-3 rounded-2xl text-xs active:scale-95 transition-all" style="background:var(--input);color:var(--primary)">
+                    <i data-lucide="map" size="16"></i>
+                </button>
+                <button onclick="openStatusModal('${o.id}')"
+                    class="px-3 rounded-2xl text-xs active:scale-95 transition-all" style="background:var(--input);color:#7c3aed">
+                    <i data-lucide="refresh-cw" size="16"></i>
+                </button>
+                <button onclick="editOrder('${o.id}')"
+                    class="px-3 rounded-2xl text-xs active:scale-95 transition-all" style="background:var(--input);color:var(--sub)">
+                    <i data-lucide="edit-3" size="16"></i>
+                </button>
+                <button onclick="deleteOrder('${o.id}')"
+                    class="px-3 rounded-2xl text-xs active:scale-95 transition-all" style="background:#fef2f2;color:#dc2626">
+                    <i data-lucide="trash-2" size="16"></i>
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+}
+
+/* ══ STATS VIEW ══ */
+function renderStats(el, nW, nD, nOk, cod, tot) {
+    const f    = calcFinance();
+    const rate = tot ? Math.round((nOk/tot)*100) : 0;
+
+    const bar = (lbl, v, color) => {
+        const p = tot ? Math.round((v/tot)*100) : 0;
+        return `<div class="mb-3">
+            <div class="flex justify-between text-[10px] mb-1">
+                <span style="color:var(--sub)">${lbl}</span>
+                <span class="font-bold" style="color:var(--text)">${v} (${p}%)</span>
+            </div>
+            <div class="h-2 rounded-full" style="background:var(--border)">
+                <div style="width:${p}%;background:${color};height:100%;border-radius:99px;transition:width .6s"></div>
+            </div></div>`;
+    };
+
+    el.innerHTML = `
+    <!-- Delivery Stats -->
+    <div class="grid grid-cols-2 gap-3">
+        <div class="card p-4 text-center">
+            <div class="text-3xl font-black" style="color:var(--primary)">${nOk}</div>
+            <div class="text-xs font-bold mt-1" style="color:var(--sub)">تم التوصيل ✅</div>
+        </div>
+        <div class="card p-4 text-center">
+            <div class="text-3xl font-black text-green-500">${rate}%</div>
+            <div class="text-xs font-bold mt-1" style="color:var(--sub)">نسبة النجاح 🎯</div>
+        </div>
+    </div>
+
+    <!-- Finance Stats ★ NEW ★ -->
+    <div class="card p-4" style="border-color:#bbf7d0;background:#f0fdf4">
+        <p class="text-xs font-black mb-3 text-emerald-700">💰 ملخص الحسابات</p>
+        <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+                <p class="text-lg font-black text-emerald-800">${f.profit.toLocaleString()}</p>
+                <p class="text-[9px] font-bold text-emerald-600">مكسبي</p>
+            </div>
+            <div>
+                <p class="text-lg font-black text-blue-800">${f.total.toLocaleString()}</p>
+                <p class="text-[9px] font-bold text-blue-600">التحصيل</p>
+            </div>
+            <div>
+                <p class="text-lg font-black text-amber-800">${f.company.toLocaleString()}</p>
+                <p class="text-[9px] font-bold text-amber-600">للشركة</p>
+            </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-emerald-200 flex justify-between items-center">
+            <span class="text-[10px] text-emerald-600 font-bold">معدل ${profitRate} ج/أوردر</span>
+            <button onclick="openFinanceModal()" class="text-[10px] bg-emerald-600 text-white px-3 py-1 rounded-lg font-bold active:scale-90">تفاصيل أكثر</button>
+        </div>
+    </div>
+
+    <!-- Distribution Chart -->
+    <div class="card p-4">
+        <p class="text-xs font-black mb-4" style="color:var(--text)">📊 توزيع الأوردرات</p>
+        ${bar('🚀 في الطريق',   nW,  '#3b82f6')}
+        ${bar('⏳ مؤجل',        nD,  '#f59e0b')}
+        ${bar('✅ تم التوصيل', nOk, '#22c55e')}
+    </div>
+
+    <!-- Pending Cash -->
+    ${f.pending > 0 ? `
+    <div class="card p-4 flex items-center gap-3">
+        <span class="text-2xl">⏳</span>
+        <div>
+            <p class="font-bold text-sm" style="color:var(--text)">${f.pending.toLocaleString()} ج معلّقة</p>
+            <p class="text-xs" style="color:var(--sub)">كاش لم يُحصَّل بعد</p>
+        </div>
+    </div>` : ''}
+
+    <!-- Report Buttons -->
+    <button onclick="buildReport()"
+        class="w-full bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 shadow-xl">
+        <i data-lucide="share-2" size="16"></i> مشاركة تقرير الأوردرات 🦅
+    </button>
+    <button onclick="openFinanceModal()"
+        class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 active:scale-95 shadow-xl">
+        <i data-lucide="wallet" size="16"></i> مشاركة تقرير الحسابات 💰
+    </button>
+    <button onclick="confirmClear()"
+        class="w-full py-4 rounded-2xl font-bold text-sm active:scale-95" style="background:#fef2f2;color:#dc2626">
+        🗑️ مسح الأوردرات المُوصَّلة
+    </button>`;
+    lucide.createIcons();
+}
+
+/* ══ REPORT ══ */
+function buildReport() {
+    const d    = new Date();
+    const days = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const f    = calcFinance();
+
+    reportTxt = `✈️ تقرير عمار الطيار
+📅 ${days[d.getDay()]} ${d.toLocaleDateString('ar-EG')}
+━━━━━━━━━━━━━━
+📦 وُصّل: ${f.count} / ${orders.length} أوردر
+🚀 في الطريق: ${orders.filter(o=>o.section==='في الطريق').length}
+⏳ مؤجل: ${orders.filter(o=>o.section==='مؤجل').length}
+━━━━━━━━━━━━━━
+💵 إجمالي التحصيل: ${f.total.toLocaleString()} ج
+💰 مكسبي: ${f.profit.toLocaleString()} ج
+🏢 توريد الشركة: ${f.company.toLocaleString()} ج
+⏳ معلّق: ${f.pending.toLocaleString()} ج
+━━━━━━━━━━━━━━
+${f.delivered.map((o,i)=>`${i+1}. ${o.customerName} — ${o.cod||0} ج`).join('\n')||'لا يوجد'}`;
+
+    document.getElementById('reportText').innerText = reportTxt;
+    document.getElementById('reportModal').classList.remove('hidden');
+    lucide.createIcons();
+}
+
+function shareReport(type) {
+    if (type==='copy') navigator.clipboard?.writeText(reportTxt).then(()=>showToast('تم النسخ 📋')).catch(()=>showToast('فشل النسخ'));
+    else window.open(`https://wa.me/?text=${encodeURIComponent(reportTxt)}`, '_blank');
+}
+function closeReportModal() { document.getElementById('reportModal').classList.add('hidden'); }
+
+/* ══ FORM ══ */
+document.getElementById('orderForm').onsubmit = e => {
+    e.preventDefault();
+    const id = document.getElementById('orderId').value || Math.random().toString(36).substr(2,5).toUpperCase();
+    const data = {
+        id,
+        customerName: document.getElementById('custName').value.trim(),
+        phone:        document.getElementById('custPhone').value.trim(),
+        address:      document.getElementById('custAddr').value.trim(),
+        cod:          document.getElementById('custCod').value || 0,
+        note:         document.getElementById('custNote').value.trim(),
+        urgent:       document.getElementById('custUrgent').checked,
+        section:      document.getElementById('custSec').value,
+        createdAt:    new Date().toISOString()
+    };
+    const idx = orders.findIndex(o => o.id === id);
+    if (idx > -1) orders[idx] = data; else orders.unshift(data);
+    saveData(); closeModal(); renderOrders();
+    showToast('تم الحفظ في قاعدة بيانات الطيار 🦅');
+};
+
+function editOrder(id) {
+    const o = orders.find(o => o.id===id); if (!o) return;
+    document.getElementById('orderId').value      = o.id;
+    document.getElementById('custName').value     = o.customerName;
+    document.getElementById('custPhone').value    = o.phone;
+    document.getElementById('custAddr').value     = o.address;
+    document.getElementById('custCod').value      = o.cod;
+    document.getElementById('custNote').value     = o.note||'';
+    document.getElementById('custUrgent').checked = !!o.urgent;
+    document.getElementById('custSec').value      = o.section;
+    document.getElementById('modalTitle').innerText = '📝 تعديل بيانات الأوردر';
+    openModal();
+}
+
+function deleteOrder(id) {
+    if (!confirm('حذف هذا الأوردر؟')) return;
+    orders = orders.filter(o => o.id !== id);
+    saveData(); renderOrders(); showToast('تم الحذف 🗑️');
+}
+
+function confirmClear() {
+    if (!confirm('مسح كل الأوردرات المُوصَّلة؟ لا يمكن التراجع.')) return;
+    orders = orders.filter(o => o.section !== 'تم التوصيل');
+    saveData(); renderOrders(); showToast('تم المسح ✅');
+}
+
+/* ══ STATUS MODAL ══ */
+function openStatusModal(id) {
+    currentStatusId = id;
+    document.getElementById('statusModal').classList.remove('hidden');
+    lucide.createIcons();
+}
+function closeStatusModal() {
+    document.getElementById('statusModal').classList.add('hidden');
+    currentStatusId = null;
+}
+function changeStatus(status) {
+    const o = orders.find(o => o.id===currentStatusId); if (!o) return;
+    o.section = status; saveData(); renderOrders(); closeStatusModal();
+    showToast(`نُقل إلى: ${status} ✅`);
+}
+
+/* ══ MODAL HELPERS ══ */
+function openModal()  { document.getElementById('orderModal').classList.remove('hidden'); lucide.createIcons(); }
+function closeModal() {
+    document.getElementById('orderModal').classList.add('hidden');
+    document.getElementById('orderForm').reset();
+    document.getElementById('orderId').value = '';
+    document.getElementById('modalTitle').innerText = '📦 إضافة أوردر جديد';
+}
+
+/* ══ TOAST ══ */
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').innerText = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+/* ══ LINKS ══ */
+function openWA(phone, addr, cod) {
+    window.open(`https://wa.me/2${phone}?text=${encodeURIComponent(`معاك عمار الطيار ✈️\nمعاك أوردر بـ ${cod} جنيه\n📍 ${decodeURIComponent(addr)}`)}`, '_blank');
+}
+function openMaps(addr) { window.open(`https://maps.google.com?q=${addr}`, '_blank'); }
+
+/* ══ INIT ══ */
+renderOrders();
+lucide.createIcons();
+</script>
+</body>
+</html>
